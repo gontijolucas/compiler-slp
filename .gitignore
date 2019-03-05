@@ -60,6 +60,3 @@ Temporary Items
 *.iml
 out
 gen
-.gitignore
-pom.xml
-src/
