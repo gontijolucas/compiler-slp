@@ -13,27 +13,28 @@
 
 **Palavras Reservadas (PR)**: 
 
-|Palavra |Equivalente   |
-|--------|--------------|
-|fun     |function      |
-|int     |int           |
-|real    |double        |
-|texto   |string        |
-|logico  |bool, boolean |
-|nada    |void          |
-|enquanto|while         |
-|se      |if            |
-|senao   |else          |
-|retorna |return        |
+|Palavra |      Equivalente     |
+|--------|----------------------|
+|fun     |function              |
+|int     |int                   |
+|real    |double                |
+|texto   |string                |
+|logico  |bool, boolean         |
+|nada    |void                  |
+|enquanto|while                 |
+|se      |if                    |
+|senao   |else                  |
+|retorna |return                |
+|:       |fun foo()`:` int {...}|
 
 **Delimitadores (DE)**:
 
-|Símbolo|Descrição|
-|-------|---------|
-|(      |Abertura do escopo|
-|)      |Fechamento do escopo|
-|[||
-|]||
+|Símbolo|       Descrição     |
+|-------|---------------------|
+|(      |Abertura do escopo   |
+|)      |Fechamento do escopo |
+|[      |Abertura Parâmetros  |
+|]      |Fechamento Parâmetros|
 
 **Operadores (OP)**:
 
