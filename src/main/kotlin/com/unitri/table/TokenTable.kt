@@ -20,19 +20,18 @@ data class TokenTable(
     override fun toString(): String {
 
         var content = Formatter()
-            .format("| %15s | %10s | %10s | %10s |\n", "CLASS", "VALUE", "INDEX", "COLUMN")
+            .format("| %15s | %15s | %5s | %5s |\n", "CLASS", "VALUE", "INDEX", "COLUMN")
             .toString()
 
         content += Formatter().format("\n".padStart(content.length, '-'))
 
         tokens.forEach {
             content += Formatter()
-                .format("| %15s | %10s | %10s | %10s |\n", it.tokenClass, it.value, it.index, it.column)
+                .format("| %15s | %15s | %5s | %5s |\n", it.tokenClass, it.image, it.line, it.column)
                 .toString()
         }
 
         return content
     }
-
 
 }

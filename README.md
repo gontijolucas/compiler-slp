@@ -11,7 +11,7 @@
 
 ### Vocabulário
 
-**Palavras Reservadas (PR)**: 
+**Palavras Reservadas (PR):**
 
 |Palavra |      Equivalente     |
 |--------|----------------------|
@@ -27,7 +27,7 @@
 |retorna |return                |
 |:       |fun foo()`:` int {...}|
 
-**Delimitadores (DE)**:
+**Delimitadores (DE):**
 
 |Símbolo|       Descrição     |
 |-------|---------------------|
@@ -36,7 +36,7 @@
 |[      |Abertura Parâmetros  |
 |]      |Fechamento Parâmetros|
 
-**Operadores (OP)**:
+**Operadores (OP):**
 
 |Símbolo|Descrição|
 |-------|---------|
@@ -55,7 +55,7 @@
 |`>=`   |Maior ou igual á|
 |`<=`   |Menor ou igual á|
 
-**Constante Literal (CL)**:
+**Constante Literal (CL):**
 
 |Constante Literal | Expressão Regular | Exemplo |
 |------------------|-------------------|-----------|
@@ -65,10 +65,17 @@
 |CL Lógica (CLL)   | V <code>&#124;</code> F | true or false
 |CL Separador (CLS)| \"(l+d+BLANKSPACE)\" | `(_fun_soma_[_(_int_a_)_(_int_b_)_]` _ = BLANKSPACE
 
-**Exemplo programas**:
+
+**Gramática:**
 
 ```
-( fun soma [ ( int a ) , ( int b ) ] : int
+```
+
+
+**Exemplo programas:**
+
+```
+( fun soma [ ( int a )  ( int b ) ] : int
      ( int aux )
      ( = aux ( + a ( sub a b) ) )
      ( ret aux )

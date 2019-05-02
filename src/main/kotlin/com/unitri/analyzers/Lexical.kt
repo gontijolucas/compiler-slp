@@ -10,6 +10,8 @@ class Lexical {
 
     companion object {
 
+        private const val CAPTURE_SENTENCES_INCLUDING_STRINGS = "([^\"]\\S*|\".+?\")\\s*"
+
         fun createTable(lines: MutableList<String>): TokenTable {
 
             removeComments(lines)
@@ -40,7 +42,7 @@ class Lexical {
             val tokenTable = TokenTable()
 
             val symbolSequences = ArrayList<String>()
-            val matcher = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(line)
+            val matcher = Pattern.compile(CAPTURE_SENTENCES_INCLUDING_STRINGS).matcher(line)
             while (matcher.find()) {
                 symbolSequences.add(matcher.group(1)) // Add .replace("\"", "") to remove surrounding quotes.
             }

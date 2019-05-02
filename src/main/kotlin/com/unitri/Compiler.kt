@@ -1,16 +1,24 @@
 package com.unitri
 
 import com.unitri.analyzers.Lexical
+import com.unitri.analyzers.Syntatic
+import com.unitri.table.TokenTable
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
+
+    var tokenTable = TokenTable()
+
     args.forEach {
         val content = readFileContent(it)
-        val tokentable = Lexical.createTable(content)
-        println(tokentable)
+        tokenTable = Lexical.createTable(content)
+        println(tokenTable)
     }
+
+    val syntatic = Syntatic(tokenTable.tokens)
+    val syntaticTree = syntatic.analyze(tokenTable.tokens)
 }
 
 @Throws(IOException::class)
