@@ -31,7 +31,7 @@ class Syntatic(
         return tokens[position + quantity]
     }
 
-    fun analyze(tokens: MutableList<Token>): Pair<Node, List<String>> {
+    fun analyze(): Pair<Node, List<String>> {
         programa()
         return Pair(rootNode, errorList)
     }

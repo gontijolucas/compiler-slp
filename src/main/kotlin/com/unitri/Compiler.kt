@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
     }
 
     val syntatic = Syntatic(tokenTable.tokens)
-    val syntaticTree = syntatic.analyze(tokenTable.tokens)
+    val syntaticTree = syntatic.analyze()
 }
 
 @Throws(IOException::class)
