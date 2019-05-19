@@ -5,6 +5,7 @@ import com.unitri.gramar.Operators
 import com.unitri.table.Token
 import com.unitri.tree.Node
 
+@Suppress("SpellCheckingInspection")
 class Syntatic(
     var tokens: MutableList<Token>
 ) {
@@ -18,7 +19,7 @@ class Syntatic(
         nextToken()
     }
 
-    fun errorLog(expected: List<String>, token: Token) {
+    private fun addError(expected: List<String>, token: Token) {
         errorList.add(String.format("Expected %s at position %d:%d", expected, token.line, token.column))
     }
 
@@ -56,10 +57,10 @@ class Syntatic(
             if (currentToken.image == ")") {
                 nextToken()
             } else {
-                errorLog(listOf(")"), currentToken)
+                addError(listOf(")"), currentToken)
             }
         } else {
-            errorLog(listOf("("), currentToken)
+            addError(listOf("("), currentToken)
         }
     }
 
@@ -75,13 +76,13 @@ class Syntatic(
                     tipo()
                     comandos()
                 } else {
-                    errorLog(listOf(":"), currentToken)
+                    addError(listOf(":"), currentToken)
                 }
             } else {
-                errorLog(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(Token.TokenClass.ID.value), currentToken)
             }
         } else {
-            errorLog(listOf("fun"), currentToken)
+            addError(listOf("fun"), currentToken)
         }
     }
 
@@ -103,13 +104,13 @@ class Syntatic(
                 if (currentToken.image == ")") {
                     nextToken()
                 } else {
-                    errorLog(listOf(")"), currentToken)
+                    addError(listOf(")"), currentToken)
                 }
             } else {
-                errorLog(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(Token.TokenClass.ID.value), currentToken)
             }
         } else {
-            errorLog(listOf("("), currentToken)
+            addError(listOf("("), currentToken)
         }
     }
 
@@ -119,7 +120,7 @@ class Syntatic(
         if (tipos.contains(currentToken.image)) {
             nextToken()
         } else {
-            errorLog(tipos, currentToken)
+            addError(tipos, currentToken)
         }
     }
 
@@ -139,10 +140,10 @@ class Syntatic(
             if (currentToken.image == ")") {
                 nextToken()
             } else {
-                errorLog(listOf(")"), currentToken)
+                addError(listOf(")"), currentToken)
             }
         } else {
-            errorLog(listOf("("), currentToken)
+            addError(listOf("("), currentToken)
         }
     }
 
@@ -163,7 +164,7 @@ class Syntatic(
                 } else {
                     val errors = Keywords.types().toMutableList()
                     errors += listOf("=", "se", "enquanto", "para", "ret", "mostrar")
-                    errorLog(errors, currentToken)
+                    addError(errors, currentToken)
                 }
             }
         }
@@ -181,7 +182,7 @@ class Syntatic(
             nextToken()
             ids2()
         } else {
-            errorLog(listOf(Token.TokenClass.ID.value), currentToken)
+            addError(listOf(Token.TokenClass.ID.value), currentToken)
         }
     }
 
@@ -201,21 +202,37 @@ class Syntatic(
                 nextToken()
                 expr()
             } else {
-                errorLog(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(Token.TokenClass.ID.value), currentToken)
             }
         } else {
-            errorLog(listOf("="), currentToken)
+            addError(listOf("="), currentToken)
         }
     }
 
-    //    <expr> ::= <operan> | '(' <op2> <expr> <expr> ')' | '(' <op1> id ')'
+    //    <expr> :: <operan> | '(' <op2> <expr> <expr> ')' | '(' <op1> id ')' | '(' <invoca> ')'
     fun expr() {
-        TODO("")
-//        if (Token.TokenClass.literalConstants().contains(currentToken.image)) {
-//            operan()
-//        } else {
-//
-//        }
+        if (Token.TokenClass.literalConstants().contains(currentToken.image)) {
+            operan()
+        } else if (currentToken.image == "(") {
+
+            val lookAhead = lookAhead(1)
+
+            when {
+                Operators.isDefaultOperator(lookAhead.image) -> op2()
+                Operators.isUnaryOperator(lookAhead.image) -> op1()
+                lookAhead.tokenClass == Token.TokenClass.ID -> invoca()
+                else -> {
+                    val expected =
+                        listOf(
+                            Operators.operators().toString(),
+                            Operators.unaryOperators().toString(),
+                            Token.TokenClass.ID.value
+                        )
+                    addError(expected, lookAhead)
+                }
+            }
+
+        }
     }
 
     //    <op2> ::= '&&' | '||' | '>' | '>=' | '<' | '<=' | '==' | '!=' | '.' | '+' | '-' | '*' | '/'
@@ -223,7 +240,7 @@ class Syntatic(
         if (Operators.operators().contains(currentToken.image)) {
             nextToken()
         } else {
-            errorLog(Operators.operators(), currentToken)
+            addError(Operators.operators(), currentToken)
         }
     }
 
@@ -232,7 +249,7 @@ class Syntatic(
         if (Operators.unaryOperators().contains(currentToken.image)) {
             nextToken()
         } else {
-            errorLog(Operators.unaryOperators(), currentToken)
+            addError(Operators.unaryOperators(), currentToken)
         }
     }
 
@@ -242,7 +259,7 @@ class Syntatic(
             nextToken()
             args()
         } else {
-            errorLog(listOf(Token.TokenClass.ID.value), currentToken)
+            addError(listOf(Token.TokenClass.ID.value), currentToken)
         }
     }
 
@@ -262,7 +279,7 @@ class Syntatic(
             if (currentToken.image == ")") {
                 nextToken()
             } else {
-                errorLog(listOf(")"), currentToken)
+                addError(listOf(")"), currentToken)
             }
         }
     }
@@ -279,13 +296,13 @@ class Syntatic(
                     nextToken()
                     seNao()
                 } else {
-                    errorLog(listOf(")"), currentToken)
+                    addError(listOf(")"), currentToken)
                 }
             } else {
-                errorLog(listOf("("), currentToken)
+                addError(listOf("("), currentToken)
             }
         } else {
-            errorLog(listOf("se"), currentToken)
+            addError(listOf("se"), currentToken)
         }
     }
 
@@ -297,7 +314,7 @@ class Syntatic(
             if (currentToken.image == ")") {
                 nextToken()
             } else {
-                errorLog(listOf(")"), currentToken)
+                addError(listOf(")"), currentToken)
             }
         }
     }
@@ -309,10 +326,10 @@ class Syntatic(
             if (currentToken.tokenClass == Token.TokenClass.ID) {
                 nextToken()
             } else {
-                errorLog(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(Token.TokenClass.ID.value), currentToken)
             }
         } else {
-            errorLog(listOf("le"), currentToken)
+            addError(listOf("le"), currentToken)
         }
     }
 
@@ -322,7 +339,7 @@ class Syntatic(
             nextToken()
             expr()
         } else {
-            errorLog(listOf("mostra"), currentToken)
+            addError(listOf("mostra"), currentToken)
         }
     }
 
@@ -332,7 +349,7 @@ class Syntatic(
             expr()
             comandos()
         } else {
-            errorLog(listOf("enquanto"), currentToken)
+            addError(listOf("enquanto"), currentToken)
         }
     }
 
@@ -345,7 +362,7 @@ class Syntatic(
             atrib()
             comandos()
         } else {
-            errorLog(listOf("para"), currentToken)
+            addError(listOf("para"), currentToken)
         }
     }
 
@@ -355,7 +372,7 @@ class Syntatic(
             nextToken()
             expr()
         } else {
-            errorLog(listOf("ret"), currentToken)
+            addError(listOf("ret"), currentToken)
         }
     }
 
