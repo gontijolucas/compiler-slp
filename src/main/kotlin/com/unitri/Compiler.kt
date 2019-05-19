@@ -9,6 +9,10 @@ import java.nio.file.Paths
 
 fun main(args: Array<String>) {
 
+    if (args.isNullOrEmpty()) {
+        throw IllegalArgumentException("Target program is not provided!")
+    }
+
     var tokenTable = TokenTable()
 
     args.forEach {
