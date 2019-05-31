@@ -3,6 +3,9 @@ package com.unitri.analyzers
 import com.unitri.gramar.Keywords
 import com.unitri.gramar.Operators
 import com.unitri.table.Token
+import com.unitri.table.Token.TokenClass.Companion.isLiteralConstant
+import com.unitri.table.Token.TokenClass.EOF
+import com.unitri.table.Token.TokenClass.ID
 import com.unitri.tree.Node
 
 @Suppress("SpellCheckingInspection")
@@ -16,45 +19,65 @@ class Syntatic(
     private lateinit var rootNode: Node
 
     init {
-        nextToken()
+        startCurrentToken()
     }
 
     private fun addError(expected: List<String>, token: Token) {
+//        throw RuntimeException("Reason: $expected, received: $token")
         errorList.add(String.format("Expected %s at position %d:%d", expected, token.line, token.column))
     }
 
-    private fun nextToken() {
+    private fun startCurrentToken() {
         currentToken = tokens[++position]
+    }
+
+    private fun nextToken() {
+        if (currentToken.tokenClass != EOF) {
+            currentToken = tokens[++position]
+        }
     }
 
     private fun lookAhead(quantity: Int): Token {
         return tokens[position + quantity]
     }
 
-    fun analyze(): Pair<Node, List<String>> {
-        programa()
-        return Pair(rootNode, errorList)
+    fun analyze(): Node {
+        rootNode = Node("ROOT")
+        rootNode.insertChildren(programa())
+
+        if (errorList.isEmpty()) {
+            rootNode.showTree()
+        } else {
+            println(errorList)
+        }
+
+        return rootNode
     }
 
     //    <programa> ::= <comando> <programa> | <funcao> <programa> | &
-    fun programa() {
+    fun programa(): Node {
+        val nodePrograma = Node("<programa>")
         if (currentToken.image == "(") {
             if (lookAhead(1).image == "fun") {
-                this.funcao()
-                this.programa()
+                nodePrograma.insertChildren(this.funcao())
+                nodePrograma.insertChildren(this.programa())
             } else {
-                this.comando()
-                this.programa()
+                nodePrograma.insertChildren(this.comando())
+                nodePrograma.insertChildren(this.programa())
             }
         }
+        return nodePrograma
     }
 
     //    <funcao> ::= '(' <funcao-interna> ')'
-    fun funcao() {
+    fun funcao(): Node {
+        val noFuncao = Node("<funcao>")
         if (currentToken.image == "(") {
+            noFuncao.insertChildren(Node(currentToken))
             nextToken()
-            this.funcaoInterna()
+            noFuncao.insertChildren(this.funcaoInterna())
             if (currentToken.image == ")") {
+                noFuncao.insertChildren(Node(currentToken))
                 nextToken()
             } else {
                 addError(listOf(")"), currentToken)
@@ -62,82 +85,103 @@ class Syntatic(
         } else {
             addError(listOf("("), currentToken)
         }
+        return noFuncao
     }
 
     //    <funcao-interna> ::= 'fun' id <params> ':' <tipo> <comandos>
-    fun funcaoInterna() {
+    fun funcaoInterna(): Node {
+        val nodeFuncaoInterna = Node("<funcao-interna>")
         if (currentToken.image == "fun") {
+            nodeFuncaoInterna.insertChildren(Node(currentToken))
             nextToken()
-            if (currentToken.tokenClass == Token.TokenClass.ID) {
+            if (currentToken.tokenClass == ID) {
+                nodeFuncaoInterna.insertChildren(Node(currentToken))
                 nextToken()
-                params()
+                nodeFuncaoInterna.insertChildren(params())
                 if (currentToken.image == ":") {
+                    nodeFuncaoInterna.insertChildren(Node(currentToken))
                     nextToken()
-                    tipo()
-                    comandos()
+                    nodeFuncaoInterna.insertChildren(tipo())
+                    nodeFuncaoInterna.insertChildren(comandos())
                 } else {
                     addError(listOf(":"), currentToken)
                 }
             } else {
-                addError(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(ID.value), currentToken)
             }
         } else {
             addError(listOf("fun"), currentToken)
         }
+        return nodeFuncaoInterna
     }
 
     //    <params> ::= <param> <params> | &
-    fun params() {
+    fun params(): Node {
+        val nodeParams = Node("<params>")
         if (lookAhead(1).image == "(") {
-            param()
-            params()
+            nodeParams.insertChildren(param())
+            nodeParams.insertChildren(params())
         }
+        return nodeParams
     }
 
     //    <param> ::= '(' <tipo> id ')'
-    fun param() {
+    fun param(): Node {
+        val nodeParam = Node("<param>")
         if (currentToken.image == "(") {
+            nodeParam.insertChildren(Node(currentToken))
             nextToken()
-            tipo()
-            if (currentToken.tokenClass == Token.TokenClass.ID) {
+            nodeParam.insertChildren(tipo())
+            if (currentToken.tokenClass == ID) {
+                nodeParam.insertChildren(Node(currentToken))
                 nextToken()
                 if (currentToken.image == ")") {
+                    nodeParam.insertChildren(Node(currentToken))
                     nextToken()
                 } else {
                     addError(listOf(")"), currentToken)
                 }
             } else {
-                addError(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(ID.value), currentToken)
             }
         } else {
             addError(listOf("("), currentToken)
         }
+        return nodeParam
     }
 
     //    <tipo> ::= 'int' | 'real' | 'texto' | 'logico' | 'nada'
-    fun tipo() {
+    fun tipo(): Node {
+        val nodeTipo = Node("<tipo>")
         val tipos = Keywords.types()
         if (tipos.contains(currentToken.image)) {
+            nodeTipo.insertChildren(Node(currentToken))
             nextToken()
         } else {
             addError(tipos, currentToken)
         }
+        return nodeTipo
     }
 
     //    <comandos> ::= <comando> <comandos> | &
-    fun comandos() {
+    fun comandos(): Node {
+        val nodeComandos = Node("<comandos>")
         if (lookAhead(1).image == "(") {
-            comando()
-            comandos()
+            nodeComandos.insertChildren(comando())
+            nodeComandos.insertChildren(comandos())
         }
+        return nodeComandos
     }
 
     //    <comando> ::= '(' <comando-interno> ')'
-    fun comando() {
+    fun comando(): Node {
+        val nodeComando = Node("<comando>")
         if (currentToken.image == "(") {
+            nodeComando.insertChildren(Node(currentToken))
             nextToken()
-            comandoInterno()
+            nodeComando.insertChildren(comandoInterno())
             if (currentToken.image == ")") {
+                nodeComando.insertChildren(Node(currentToken))
                 nextToken()
             } else {
                 addError(listOf(")"), currentToken)
@@ -145,22 +189,24 @@ class Syntatic(
         } else {
             addError(listOf("("), currentToken)
         }
+        return nodeComando
     }
 
     //    <comando-interno> ::= <decl> | <atrib> | <invoca> | <se> | <leitura> | <enquanto> | <para> | <retorno> | <mostrar>
-    fun comandoInterno() {
+    fun comandoInterno(): Node {
+        val nodeComandoInterno = Node("<comando-interno>")
         when (currentToken.image) {
-            in Keywords.types() -> decl()
-            "=" -> atrib()
-            "se" -> se()
-            "le" -> leitura()
-            "enquanto" -> enquanto()
-            "para" -> para()
-            "ret" -> retorno()
-            "mostra" -> mostrar()
+            in Keywords.types() -> nodeComandoInterno.insertChildren(decl())
+            "=" -> nodeComandoInterno.insertChildren(atrib())
+            "se" -> nodeComandoInterno.insertChildren(se())
+            "le" -> nodeComandoInterno.insertChildren(leitura())
+            "enquanto" -> nodeComandoInterno.insertChildren(enquanto())
+            "para" -> nodeComandoInterno.insertChildren(para())
+            "ret" -> nodeComandoInterno.insertChildren(retorno())
+            "mostra" -> nodeComandoInterno.insertChildren(mostrar())
             else -> {
-                if (currentToken.tokenClass == Token.TokenClass.ID) {
-                    invoca()
+                if (currentToken.tokenClass == ID) {
+                    nodeComandoInterno.insertChildren(invoca())
                 } else {
                     val errors = Keywords.types().toMutableList()
                     errors += listOf("=", "se", "enquanto", "para", "ret", "mostrar")
@@ -168,133 +214,162 @@ class Syntatic(
                 }
             }
         }
+        return nodeComandoInterno
     }
 
     //    <decl> ::= <tipo> <ids>
-    fun decl() {
-        tipo()
-        ids()
+    fun decl(): Node {
+        val nodeDecl = Node("<decl>")
+        nodeDecl.insertChildren(tipo())
+        nodeDecl.insertChildren(ids())
+        return nodeDecl
     }
 
     //    <ids> ::= id <ids2>
-    fun ids() {
-        if (currentToken.tokenClass == Token.TokenClass.ID) {
+    fun ids(): Node {
+        val nodeIds = Node("<ids>")
+        if (currentToken.tokenClass == ID) {
+            nodeIds.insertChildren(Node(currentToken))
             nextToken()
-            ids2()
+            nodeIds.insertChildren(ids2())
         } else {
-            addError(listOf(Token.TokenClass.ID.value), currentToken)
+            addError(listOf(ID.value), currentToken)
         }
+        return nodeIds
     }
 
     //    <ids2> ::= id <ids2> | &
-    fun ids2() {
-        if (currentToken.tokenClass == Token.TokenClass.ID) {
+    fun ids2(): Node {
+        val nodeIds2 = Node("<ids2>")
+        if (currentToken.tokenClass == ID) {
+            nodeIds2.insertChildren(Node(currentToken))
             nextToken()
-            ids2()
+            nodeIds2.insertChildren(ids2())
         }
+        return nodeIds2
     }
 
     //    <atrib> ::= '=' id <expr>
-    fun atrib() {
+    fun atrib(): Node {
+        val nodeAtrib = Node("<atrib>")
         if (currentToken.image == "=") {
+            nodeAtrib.insertChildren(Node(currentToken))
             nextToken()
-            if (currentToken.tokenClass == Token.TokenClass.ID) {
+            if (currentToken.tokenClass == ID) {
+                nodeAtrib.insertChildren(Node(currentToken))
                 nextToken()
-                expr()
+                nodeAtrib.insertChildren(expr())
             } else {
-                addError(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(ID.value), currentToken)
             }
         } else {
             addError(listOf("="), currentToken)
         }
+        return nodeAtrib
     }
 
     //    <expr> :: <operan> | '(' <op2> <expr> <expr> ')' | '(' <op1> id ')' | '(' <invoca> ')'
-    fun expr() {
+    fun expr(): Node {
+        val nodeExpr = Node("<expr>")
+
         if (Token.TokenClass.literalConstants().contains(currentToken.image)) {
-            operan()
+            nodeExpr.insertChildren(operan())
         } else if (currentToken.image == "(") {
 
             val lookAhead = lookAhead(1)
 
             when {
-                Operators.isDefaultOperator(lookAhead.image) -> op2()
-                Operators.isUnaryOperator(lookAhead.image) -> op1()
-                lookAhead.tokenClass == Token.TokenClass.ID -> invoca()
+                Operators.isDefaultOperator(lookAhead.image) -> nodeExpr.insertChildren(op2())
+                Operators.isUnaryOperator(lookAhead.image) -> nodeExpr.insertChildren(op1())
+                lookAhead.tokenClass == ID -> nodeExpr.insertChildren(invoca())
                 else -> {
                     val expected =
                         listOf(
                             Operators.operators().toString(),
                             Operators.unaryOperators().toString(),
-                            Token.TokenClass.ID.value
+                            ID.value
                         )
                     addError(expected, lookAhead)
                 }
             }
 
         }
+        return nodeExpr
     }
 
     //    <op2> ::= '&&' | '||' | '>' | '>=' | '<' | '<=' | '==' | '!=' | '.' | '+' | '-' | '*' | '/'
-    fun op2() {
+    fun op2(): Node {
+        val nodeOp2 = Node("<op2>")
         if (Operators.operators().contains(currentToken.image)) {
+            nodeOp2.insertChildren(Node(currentToken))
             nextToken()
         } else {
             addError(Operators.operators(), currentToken)
         }
+        return nodeOp2
     }
 
     //    <op1> ::= '++' | '--'
-    fun op1() {
+    fun op1(): Node {
+        val nodeOp1 = Node("<op1>")
         if (Operators.unaryOperators().contains(currentToken.image)) {
+            nodeOp1.insertChildren(Node(currentToken))
             nextToken()
         } else {
             addError(Operators.unaryOperators(), currentToken)
         }
+        return nodeOp1
     }
 
     //    <invoca> ::= id <args>
-    fun invoca() {
-        if (currentToken.tokenClass == Token.TokenClass.ID) {
+    fun invoca(): Node {
+        val nodeInvoca = Node("<invoca>")
+        if (currentToken.tokenClass == ID) {
+            nodeInvoca.insertChildren(Node(currentToken))
             nextToken()
-            args()
+            nodeInvoca.insertChildren(args())
         } else {
-            addError(listOf(Token.TokenClass.ID.value), currentToken)
+            addError(listOf(ID.value), currentToken)
         }
+        return nodeInvoca
     }
 
     //    <args> ::= <expr> <args> | &
-    fun args() {
-        expr()
-        args()
+    fun args(): Node {
+        val nodeArgs = Node("<args>")
+        nodeArgs.insertChildren(expr())
+        nodeArgs.insertChildren(args())
+        return nodeArgs
     }
 
-    //    <operan> ::= id | cli | clr | cll | cls | '(' <invoca> ')'
-    fun operan() {
-        if (Token.TokenClass.literalConstants().contains(currentToken.image)) {
+    //    <operan> ::= id | cli | clr | cll | cls
+    fun operan(): Node {
+        val nodeOperan = Node("<operan>")
+
+        if (isLiteralConstant(currentToken.image)) {
+            nodeOperan.insertChildren(Node(currentToken))
             nextToken()
-        } else if (currentToken.image == "(") {
-            nextToken()
-            invoca()
-            if (currentToken.image == ")") {
-                nextToken()
-            } else {
-                addError(listOf(")"), currentToken)
-            }
+        } else {
+            addError(Token.TokenClass.literalConstants(), currentToken)
         }
+        return nodeOperan
     }
 
     //    <se> ::= 'se' <expr> '(' <comandos> ')' <senao>
-    fun se() {
+    fun se(): Node {
+        val nodeSe = Node("<se>")
         if (currentToken.image == "se") {
+            nodeSe.insertChildren(Node(currentToken))
             nextToken()
-            expr()
+            nodeSe.insertChildren(expr())
             if (currentToken.image == "(") {
+                nodeSe.insertChildren(Node(currentToken))
                 nextToken()
-                comandos()
+                nodeSe.insertChildren(comandos())
                 if (currentToken.image == ")") {
+                    nodeSe.insertChildren(Node(currentToken))
                     nextToken()
-                    seNao()
+                    nodeSe.insertChildren(seNao())
                 } else {
                     addError(listOf(")"), currentToken)
                 }
@@ -304,76 +379,111 @@ class Syntatic(
         } else {
             addError(listOf("se"), currentToken)
         }
+        return nodeSe
     }
 
     //    <senao> ::= '(' <comandos> ')' | &
-    fun seNao() {
+    fun seNao(): Node {
+        val nodeSeNao = Node("<senao>")
         if (currentToken.image == "(") {
+            nodeSeNao.insertChildren(Node(currentToken))
             nextToken()
-            comandos()
+            nodeSeNao.insertChildren(comandos())
             if (currentToken.image == ")") {
+                nodeSeNao.insertChildren(Node(currentToken))
                 nextToken()
             } else {
                 addError(listOf(")"), currentToken)
             }
         }
+        return nodeSeNao
     }
 
     //    <leitura> ::= 'le' id
-    fun leitura() {
+    fun leitura(): Node {
+        val nodeLeitura = Node("<leitura>")
         if (currentToken.image == "le") {
+            nodeLeitura.insertChildren(Node(currentToken))
             nextToken()
-            if (currentToken.tokenClass == Token.TokenClass.ID) {
+            if (currentToken.tokenClass == ID) {
+                nodeLeitura.insertChildren(Node(currentToken))
                 nextToken()
             } else {
-                addError(listOf(Token.TokenClass.ID.value), currentToken)
+                addError(listOf(ID.value), currentToken)
             }
         } else {
             addError(listOf("le"), currentToken)
         }
+        return nodeLeitura
     }
 
     //    <mostrar> ::= 'mostra '<expr>
-    fun mostrar() {
+    fun mostrar(): Node {
+        val nodeMostrar = Node("<mostrar>")
         if (currentToken.image == "mostra") {
+            nodeMostrar.insertChildren(Node(currentToken))
             nextToken()
-            expr()
+            nodeMostrar.insertChildren(expr())
         } else {
             addError(listOf("mostra"), currentToken)
         }
+        return nodeMostrar
     }
 
     //    <enquanto> ::= 'enquanto' <expr> <comandos>
-    fun enquanto() {
+    fun enquanto(): Node {
+        val nodeEnquanto = Node("<enquanto>")
         if (currentToken.image == "enquanto") {
-            expr()
-            comandos()
+            nodeEnquanto.insertChildren(expr())
+            nodeEnquanto.insertChildren(comandos())
         } else {
             addError(listOf("enquanto"), currentToken)
         }
+        return nodeEnquanto
     }
 
-    //    <para> ::= 'para' <atrib> <expr> <atrib> <comandos>
-    fun para() {
+    //    <para> ::= 'para' '(' <atrib> ')' <expr> '(' <atrib> ')' <comandos>
+    fun para(): Node {
+        val nodePara = Node("<para>")
         if (currentToken.image == "para") {
+            nodePara.insertChildren(Node(currentToken))
             nextToken()
-            atrib()
-            expr()
-            atrib()
-            comandos()
-        } else {
-            addError(listOf("para"), currentToken)
-        }
+            if (currentToken.image == "(") {
+                nodePara.insertChildren(Node(currentToken))
+                nextToken()
+                nodePara.insertChildren(atrib())
+                if (currentToken.image == ")") {
+                    nodePara.insertChildren(Node(currentToken))
+                    nextToken()
+                    nodePara.insertChildren(expr())
+                    if (currentToken.image == "(") {
+                        nodePara.insertChildren(Node(currentToken))
+                        nextToken()
+                        nodePara.insertChildren(atrib())
+                        if (currentToken.image == ")") {
+                            nodePara.insertChildren(Node(currentToken))
+                            nextToken()
+                            nodePara.insertChildren(comandos())
+                        }
+                    } else addError(listOf("("), currentToken)
+                } else addError(listOf(")"), currentToken)
+            } else addError(listOf("("), currentToken)
+        } else addError(listOf("para"), currentToken)
+
+        return nodePara
     }
 
     //    <retorno> ::= 'ret' <expr>
-    fun retorno() {
+    fun retorno(): Node {
+        val nodeRetorno = Node("<retorno>")
         if (currentToken.image == "ret") {
+            nodeRetorno.insertChildren(Node(currentToken))
             nextToken()
-            expr()
+            nodeRetorno.insertChildren(expr())
         } else {
             addError(listOf("ret"), currentToken)
         }
+        return nodeRetorno
     }
 
 }
