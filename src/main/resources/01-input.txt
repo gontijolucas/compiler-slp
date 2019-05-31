@@ -1,4 +1,4 @@
-( fun soma [ ( int a ) ( int b ) ] : int
+( fun soma ( int a ) ( int b ) : int
      ( int aux )
      ( = aux ( + a ( sub a b) ) )
      ( ret aux )
