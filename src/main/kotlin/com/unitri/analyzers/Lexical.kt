@@ -25,6 +25,8 @@ class Lexical {
                 index.addAndGet(1)
             }
 
+            addEndOfFile(table)
+
             return table
         }
 
@@ -52,8 +54,11 @@ class Lexical {
                 tokenTable.createTokenAndPutInTable(Token.TokenClass.getClass(sequence), sequence, lineNumber, column)
                 column += sequence.length + 1
             }
-
             return tokenTable.tokens
+        }
+
+        private fun addEndOfFile(tokenTable: TokenTable) {
+            tokenTable.createTokenAndPutInTable(Token.TokenClass.EOF, "$", -1, -1)
         }
     }
 }
