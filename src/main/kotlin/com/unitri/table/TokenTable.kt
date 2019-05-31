@@ -23,13 +23,16 @@ data class TokenTable(
             .format("| %15s | %15s | %5s | %5s |\n", "CLASS", "VALUE", "INDEX", "COLUMN")
             .toString()
 
-        content += Formatter().format("\n".padStart(content.length, '-'))
+        val lineSize = content.length
+        content += Formatter().format("\n".padStart(lineSize, '-'))
 
         tokens.forEach {
             content += Formatter()
                 .format("| %15s | %15s | %5s | %5s |\n", it.tokenClass, it.image, it.line, it.column)
                 .toString()
         }
+
+        content += Formatter().format("\n".padStart(lineSize, '-'))
 
         return content
     }
