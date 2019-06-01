@@ -60,10 +60,10 @@
 |Constante Literal | Expressão Regular | Exemplo |
 |------------------|-------------------|-----------|
 |ID Identificador  | l(l+d)* | myFunction, resultado|
-|CL Inteira (CLI)  | dd* | 10, 29, 34550
-|CL Real (CLR)     | dd*.dd* | 1.23, 0.0003, 1.234
-|CL Lógica (CLL)   | V <code>&#124;</code> F | true or false
-|CL Separador (CLS)| \"(l+d+BLANKSPACE)\" | `(_fun_soma_[_(_int_a_)_(_int_b_)_]` _ = BLANKSPACE
+|CL Inteira (CLI)  | dd* | 10, 29, 34550 |
+|CL Real (CLR)     | dd*.dd* | 1.23, 0.0003, 1.234 |
+|CL Lógica (CLL)   | V <code>&#124;</code> F | true or false |
+|CL String (CLS)| \"(l+d+BLANKSPACE)\" | (= x `"um texto qualquer"`) |
 
 
 **Gramática:**
