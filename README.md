@@ -69,38 +69,64 @@
 **Gramática:**
 
 ```
+<programa> ::= <comando> <programa> | <funcao> <programa> | ε
+<funcao> ::= ‘(‘ <funcao-interna> ‘)’
+<funcao-interna> ::= ‘fun’ id <params> ‘:’ <tipo> <comandos>
+<params> ::= <param> <params> | ε
+<param> ::= ‘(‘ <tipo>  id ’)’
+<tipo> ::= ‘int’ | ‘real’ | ‘texto’ | ‘lógico’ | ‘nada’
+<comandos> ::= ‘(‘ <comando-interno> ‘)’
+<comando-interno> ::= <decl> | <atrib> | <invoca> | <se> | <leitura> | <enquanto> | <para> | <retorno> | <mostrar>
+<decl> ::= <tipo> <ids>
+<ids> ::= id <ids2>
+<ids2> ::= id <ids2> | ε
+<atrib> ::=  ‘=‘ id <expr>
+<expr> ::= <operan> | ‘(‘ <op2> <expr> <expr> ‘)’ | ‘(‘ <op1> id ‘)' | ‘(‘ <invoca> ‘)’
+<op2> ::= ‘&&’ | ‘||’ | ‘>’ | ‘>=‘ | ‘<‘ | ‘<=‘ | ‘!=‘ | ‘.’ | ‘+’ | ‘-‘ | ‘*’ | ‘/‘
+<op1> ::= ‘++’ | ‘—‘
+<invoca> ::= id <args>
+<args> ::= <expr> <args> | ε
+<operan> ::= id | cli | clr | cll | cls
+<se> ::= ‘se’ <expr> ‘(‘ <comandos> ‘)’ <senao>
+<senao> ::= ‘(‘ <comandos> ‘)’ | ε
+<leitura> ::= ‘le’ id
+<mostrar> ::= ‘mostra' <expr>
+<enquanto> ::= ‘enquanto’ <expr> <comandos>
+<para> ::= ‘para’ ‘(‘ <atrib> ‘)’ <expr> ‘(‘ <atrib> ‘)’ <comandos>
+<retorno> ::= ‘ret’ <expr>
 ```
 
 
 **Exemplo programas:**
 
 ```
-( fun soma [ ( int a )  ( int b ) ] : int
+( fun soma ( int a )  ( int b ) : int
      ( int aux )
      ( = aux ( + a ( sub a b) ) )
      ( ret aux )
 )
 
 ( texto s1 )
-( = s1 ( "soma = " ( soma 3 4 ) ) )
+( = s1 ( . "soma = " ( soma 3 4 ) ) )
 ( mostra s1 )
 
 ```
 
 ```
-( fun teste [ ] : nada
+( fun teste ( int a1 ) : int
     ( se ( < a1 100 )
         ( ( = a1 100 ) )
         ( ( = a1 20 ) )
     )
+    ( ret a1 )
 )
 ```
 
 ```
-( fun teste2 [ ] : nada
-    ( enquanto ( a > 10 )
-        ( = a 100 )
-        ( = b 20 )
+( fun teste2 ( int a ) : int
+    ( enquanto ( < a 10 )
+        ( ++ a )
     )
+    ( ret a )
 )
 ```
