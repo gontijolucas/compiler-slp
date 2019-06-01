@@ -25,7 +25,7 @@
 |se      |if                    |
 |senao   |else                  |
 |retorna |return                |
-|:       | tipo do retorno 'fun foo()`:` int {...}' |
+|:       | tipo do retorno 'fun foo()`: int` {...}' |
 
 **Delimitadores (DE):**
 
