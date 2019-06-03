@@ -1,9 +1,13 @@
 package com.unitri.analyzers
 
-import com.unitri.gramar.Keywords
-import com.unitri.gramar.Operators
+import com.unitri.gramar.Keywords.Companion.types
+import com.unitri.gramar.Operators.Companion.isDefaultOperator
+import com.unitri.gramar.Operators.Companion.isUnaryOperator
+import com.unitri.gramar.Operators.Companion.operators
+import com.unitri.gramar.Operators.Companion.unaryOperators
 import com.unitri.table.Token
 import com.unitri.table.Token.TokenClass.Companion.isLiteralConstant
+import com.unitri.table.Token.TokenClass.Companion.literalConstants
 import com.unitri.table.Token.TokenClass.EOF
 import com.unitri.table.Token.TokenClass.ID
 import com.unitri.tree.Node
@@ -23,8 +27,8 @@ class Syntatic(
     }
 
     private fun addError(expected: List<String>, token: Token) {
-//        throw RuntimeException("Reason: $expected, received: $token")
-        errorList.add(String.format("Expected %s at position %d:%d", expected, token.line, token.column))
+        throw RuntimeException("Reason: $expected, received: $token")
+//        errorList.add(String.format("Expected %s at position %d:%d", expected, token.line, token.column))
     }
 
     private fun startCurrentToken() {
@@ -118,7 +122,7 @@ class Syntatic(
     //    <params> ::= <param> <params> | &
     fun params(): Node {
         val nodeParams = Node("<params>")
-        if (lookAhead(1).image == "(") {
+        if (currentToken.image == "(") {
             nodeParams.insertChildren(param())
             nodeParams.insertChildren(params())
         }
@@ -153,7 +157,7 @@ class Syntatic(
     //    <tipo> ::= 'int' | 'real' | 'texto' | 'logico' | 'nada'
     fun tipo(): Node {
         val nodeTipo = Node("<tipo>")
-        val tipos = Keywords.types()
+        val tipos = types()
         if (tipos.contains(currentToken.image)) {
             nodeTipo.insertChildren(Node(currentToken))
             nextToken()
@@ -166,7 +170,7 @@ class Syntatic(
     //    <comandos> ::= <comando> <comandos> | &
     fun comandos(): Node {
         val nodeComandos = Node("<comandos>")
-        if (lookAhead(1).image == "(") {
+        if (currentToken.image == "(") {
             nodeComandos.insertChildren(comando())
             nodeComandos.insertChildren(comandos())
         }
@@ -196,7 +200,7 @@ class Syntatic(
     fun comandoInterno(): Node {
         val nodeComandoInterno = Node("<comando-interno>")
         when (currentToken.image) {
-            in Keywords.types() -> nodeComandoInterno.insertChildren(decl())
+            in types() -> nodeComandoInterno.insertChildren(decl())
             "=" -> nodeComandoInterno.insertChildren(atrib())
             "se" -> nodeComandoInterno.insertChildren(se())
             "le" -> nodeComandoInterno.insertChildren(leitura())
@@ -208,7 +212,7 @@ class Syntatic(
                 if (currentToken.tokenClass == ID) {
                     nodeComandoInterno.insertChildren(invoca())
                 } else {
-                    val errors = Keywords.types().toMutableList()
+                    val errors = types().toMutableList()
                     errors += listOf("=", "se", "enquanto", "para", "ret", "mostrar")
                     addError(errors, currentToken)
                 }
@@ -271,28 +275,57 @@ class Syntatic(
     //    <expr> :: <operan> | '(' <op2> <expr> <expr> ')' | '(' <op1> id ')' | '(' <invoca> ')'
     fun expr(): Node {
         val nodeExpr = Node("<expr>")
+        val lookAhead = lookAhead(1)
 
-        if (Token.TokenClass.literalConstants().contains(currentToken.image)) {
+        // <operan>
+        if (isLiteralConstant(currentToken.tokenClass.name)) {
             nodeExpr.insertChildren(operan())
-        } else if (currentToken.image == "(") {
-
-            val lookAhead = lookAhead(1)
-
-            when {
-                Operators.isDefaultOperator(lookAhead.image) -> nodeExpr.insertChildren(op2())
-                Operators.isUnaryOperator(lookAhead.image) -> nodeExpr.insertChildren(op1())
-                lookAhead.tokenClass == ID -> nodeExpr.insertChildren(invoca())
-                else -> {
-                    val expected =
-                        listOf(
-                            Operators.operators().toString(),
-                            Operators.unaryOperators().toString(),
-                            ID.value
-                        )
-                    addError(expected, lookAhead)
-                }
+        }
+        // '(' <invoca> ')'
+        else if (currentToken.image == "(" && lookAhead.tokenClass == ID) {
+            nodeExpr.insertChildren(Node(currentToken))
+            nextToken()
+            nodeExpr.insertChildren(invoca())
+            if (currentToken.image == ")") {
+                nodeExpr.insertChildren(Node(currentToken))
+                nextToken()
+            } else {
+                addError(listOf(")"), currentToken)
             }
-
+        }
+        // '(' <op2> <expr> <expr> ')'
+        else if (currentToken.image == "(" && isDefaultOperator(lookAhead.image)) {
+            nodeExpr.insertChildren(Node(currentToken))
+            nextToken()
+            nodeExpr.insertChildren(op2())
+            nodeExpr.insertChildren(expr())
+            nodeExpr.insertChildren(expr())
+            if (currentToken.image == ")") {
+                nodeExpr.insertChildren(Node(currentToken))
+                nextToken()
+            } else {
+                addError(listOf(")"), currentToken)
+            }
+        }
+        // '(' <op1> id ')'
+        else if (currentToken.image == "(" && isUnaryOperator(lookAhead.image)) {
+            nodeExpr.insertChildren(Node(currentToken))
+            nextToken()
+            nodeExpr.insertChildren(op1())
+            if (currentToken.tokenClass == ID) {
+                nodeExpr.insertChildren(Node(currentToken))
+                nextToken()
+                if (currentToken.image == ")") {
+                    nodeExpr.insertChildren(Node(currentToken))
+                    nextToken()
+                } else {
+                    addError(listOf(")"), currentToken)
+                }
+            } else {
+                addError(listOf(ID.value), currentToken)
+            }
+        } else {
+            addError(listOf("("), currentToken)
         }
         return nodeExpr
     }
@@ -300,11 +333,11 @@ class Syntatic(
     //    <op2> ::= '&&' | '||' | '>' | '>=' | '<' | '<=' | '==' | '!=' | '.' | '+' | '-' | '*' | '/'
     fun op2(): Node {
         val nodeOp2 = Node("<op2>")
-        if (Operators.operators().contains(currentToken.image)) {
+        if (operators().contains(currentToken.image)) {
             nodeOp2.insertChildren(Node(currentToken))
             nextToken()
         } else {
-            addError(Operators.operators(), currentToken)
+            addError(operators(), currentToken)
         }
         return nodeOp2
     }
@@ -312,11 +345,11 @@ class Syntatic(
     //    <op1> ::= '++' | '--'
     fun op1(): Node {
         val nodeOp1 = Node("<op1>")
-        if (Operators.unaryOperators().contains(currentToken.image)) {
+        if (unaryOperators().contains(currentToken.image)) {
             nodeOp1.insertChildren(Node(currentToken))
             nextToken()
         } else {
-            addError(Operators.unaryOperators(), currentToken)
+            addError(unaryOperators(), currentToken)
         }
         return nodeOp1
     }
@@ -346,11 +379,11 @@ class Syntatic(
     fun operan(): Node {
         val nodeOperan = Node("<operan>")
 
-        if (isLiteralConstant(currentToken.image)) {
+        if (isLiteralConstant(currentToken.tokenClass.toString())) {
             nodeOperan.insertChildren(Node(currentToken))
             nextToken()
         } else {
-            addError(Token.TokenClass.literalConstants(), currentToken)
+            addError(listOf(literalConstants().toString()), currentToken)
         }
         return nodeOperan
     }
@@ -464,7 +497,7 @@ class Syntatic(
                             nodePara.insertChildren(Node(currentToken))
                             nextToken()
                             nodePara.insertChildren(comandos())
-                        }
+                        } else addError(listOf(")"), currentToken)
                     } else addError(listOf("("), currentToken)
                 } else addError(listOf(")"), currentToken)
             } else addError(listOf("("), currentToken)
