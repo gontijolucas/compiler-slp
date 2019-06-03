@@ -1,6 +1,6 @@
 ( fun soma ( int a ) ( int b ) : int
      ( int aux )
-     ( = aux ( + a ( sub a b) ) )
+     ( = aux ( + a ( sub a b ) ) )
      ( ret aux )
 )
 
