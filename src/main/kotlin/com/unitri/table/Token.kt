@@ -38,9 +38,9 @@ data class Token(
                 }
             }
 
-            fun literalConstants() = listOf(CLI.value, CLR.value, CLL.value, CLS.value, ID.value)
+            fun literalConstants() = listOf(CLI, CLR, CLL, CLS, ID)
 
-            fun isLiteralConstant(value: String) = literalConstants().any { it.contentEquals(value) }
+            fun isLiteralConstant(value: String) = literalConstants().any { it.name == value }
         }
     }
 
