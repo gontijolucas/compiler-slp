@@ -69,46 +69,47 @@
 **Gramática:**
 
 ```
-<programa> ::= <comando> <programa> | <funcao> <programa> | ε
-<funcao> ::= ‘(‘ <funcao-interna> ‘)’
-<funcao-interna> ::= ‘fun’ id <params> ‘:’ <tipo> <comandos>
-<params> ::= <param> <params> | ε
-<param> ::= ‘(‘ <tipo>  id ’)’
-<tipo> ::= ‘int’ | ‘real’ | ‘texto’ | ‘lógico’ | ‘nada’
-<comandos> ::= ‘(‘ <comando-interno> ‘)’
+<programa> ::= <comando> <programa> | <funcao> <programa> | &
+<funcao> ::= '(' <funcao-interna> ')'
+<funcao-interna> ::= 'fun' id <params> ':' <tipo> <comandos>
+<params> ::= <param> <params> | &
+<param> ::= '(' <tipo> id ')'
+<tipo> ::= 'int' | 'real' | 'texto' | 'logico' | 'nada'
+<comandos> ::= <comando> <comandos> | &
+<comando> ::= '(' <comando-interno> ')'
 <comando-interno> ::= <decl> | <atrib> | <invoca> | <se> | <leitura> | <enquanto> | <para> | <retorno> | <mostrar>
 <decl> ::= <tipo> <ids>
 <ids> ::= id <ids2>
-<ids2> ::= id <ids2> | ε
-<atrib> ::=  ‘=‘ id <expr>
-<expr> ::= <operan> | ‘(‘ <op2> <expr> <expr> ‘)’ | ‘(‘ <op1> id ‘)' | ‘(‘ <invoca> ‘)’
-<op2> ::= ‘&&’ | ‘||’ | ‘>’ | ‘>=‘ | ‘<‘ | ‘<=‘ | ‘!=‘ | ‘.’ | ‘+’ | ‘-‘ | ‘*’ | ‘/‘
-<op1> ::= ‘++’ | ‘—‘
+<ids2> ::= id <ids2> | &
+<atrib> ::= '=' id <expr>
+<expr> :: <operan> | '(' <op2> <expr> <expr> ')' | '(' <op1> id ')' | '(' <invoca> ')'
+<op2> ::= '&&' | '||' | '>' | '>=' | '<' | '<=' | '==' | '!=' | '.' | '+' | '-' | '*' | '/'
+<op1> ::= '++' | '--'
 <invoca> ::= id <args>
-<args> ::= <expr> <args> | ε
+<args> ::= <expr> <args> | &
 <operan> ::= id | cli | clr | cll | cls
-<se> ::= ‘se’ <expr> ‘(‘ <comandos> ‘)’ <senao>
-<senao> ::= ‘(‘ <comandos> ‘)’ | ε
-<leitura> ::= ‘le’ id
-<mostrar> ::= ‘mostra' <expr>
-<enquanto> ::= ‘enquanto’ <expr> <comandos>
-<para> ::= ‘para’ ‘(‘ <atrib> ‘)’ <expr> ‘(‘ <atrib> ‘)’ <comandos>
-<retorno> ::= ‘ret’ <expr>
+<se> ::= 'se' <expr> '(' <comandos> ')' <senao>
+<senao> ::= '(' <comandos> ')' | &
+<leitura> ::= 'le' id
+<mostrar> ::= 'mostra '<expr>
+<enquanto> ::= 'enquanto' <expr> <comandos>
+<para> ::= 'para' '(' <atrib> ')' <expr> '(' <atrib> ')' <comandos>
+<retorno> ::= 'ret' <expr>
 ```
 
 
 **Exemplo programas:**
 
 ```
-( fun soma ( int a )  ( int b ) : int
+( fun soma ( int a ) ( int b ) : int
      ( int aux )
-     ( = aux ( + a ( sub a b) ) )
+     ( = aux ( + a ( sub a b ) ) )
      ( ret aux )
 )
 
-( texto s1 )
-( = s1 ( . "soma = " ( soma 3 4 ) ) )
-( mostra s1 )
+( int resultado )
+( = resultado ( soma 3 4 ) )
+( mostra resultado )
 
 ```
 
