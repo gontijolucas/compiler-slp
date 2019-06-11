@@ -27,8 +27,8 @@ class Syntatic(
     }
 
     private fun addError(expected: List<String>, token: Token) {
-        throw RuntimeException("Reason: $expected, received: $token")
-//        errorList.add(String.format("Expected %s at position %d:%d", expected, token.line, token.column))
+//        throw RuntimeException("Reason: $expected, received: $token")
+        errorList.add(String.format("Expected %s at position %d:%d", expected, token.line, token.column))
     }
 
     private fun startCurrentToken() {
@@ -370,8 +370,10 @@ class Syntatic(
     //    <args> ::= <expr> <args> | &
     fun args(): Node {
         val nodeArgs = Node("<args>")
-        nodeArgs.insertChildren(expr())
-        nodeArgs.insertChildren(args())
+        if (currentToken.image == "(" || isLiteralConstant(currentToken.tokenClass.toString())) {
+            nodeArgs.insertChildren(expr())
+            nodeArgs.insertChildren(args())
+        }
         return nodeArgs
     }
 

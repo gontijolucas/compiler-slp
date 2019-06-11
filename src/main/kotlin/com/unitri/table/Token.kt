@@ -44,6 +44,10 @@ data class Token(
         }
     }
 
+//    override fun toString(): String {
+//        return "Token(tokenClass=$tokenClass, image='$image', line=$line, column=$column)"
+//    }
+
 
     override fun toString(): String {
         return "class='$tokenClass', image='$image'"
