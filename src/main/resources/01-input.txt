@@ -4,6 +4,6 @@
      ( ret aux )
 )
 
-( texto s1 )
-( = s1 ( "soma = " ( soma 3 4 ) ) )
-( mostra s1 )
+( int resultado )
+( = resultado ( soma 3 4 ) )
+( mostra resultado )
