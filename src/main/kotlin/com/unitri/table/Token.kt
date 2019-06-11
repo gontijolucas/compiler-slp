@@ -20,7 +20,8 @@ data class Token(
         DELIMITER("Delimitador"),
         KEYWORD("Palavra reservada"),
         OPERATOR("Operador"),
-        ID("Identificador");
+        ID("Identificador"),
+        EOF("End of file");
 
         companion object {
 
@@ -37,9 +38,21 @@ data class Token(
                 }
             }
 
-            fun literalConstants() = listOf(CLI.value, CLR.value, CLL.value, CLS.value, ID.value)
+            fun literalConstants() = listOf(CLI, CLR, CLL, CLS, ID)
+
+            fun isLiteralConstant(value: String) = literalConstants().any { it.name == value }
         }
     }
+
+//    override fun toString(): String {
+//        return "Token(tokenClass=$tokenClass, image='$image', line=$line, column=$column)"
+//    }
+
+
+    override fun toString(): String {
+        return "class='$tokenClass', image='$image'"
+    }
+
 
 }
 
