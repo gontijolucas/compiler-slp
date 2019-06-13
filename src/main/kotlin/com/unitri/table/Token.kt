@@ -29,7 +29,7 @@ data class Token(
                 return when {
                     letter.matches("([0-9]+)".toRegex()) -> CLI
                     letter.matches("([0-9]+.[0-9]+)".toRegex()) -> CLR
-                    letter.matches("(vero|falso)".toRegex()) -> CLL
+                    letter.matches("(V|F)".toRegex()) -> CLL
                     letter.matches("\".*\"".toRegex()) -> CLS
                     Delimiters.isDelimiter(letter) -> DELIMITER
                     Keywords.isKeyword(letter) -> KEYWORD
